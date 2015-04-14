@@ -8,7 +8,7 @@ object Lists {
    * @return The sum of all elements in `xs`
    */
   def sum(xs: List[Int]): Int = xs match {
-    case List()   => throw new java.util.NoSuchElementException()
+    case List()   => throw new Exception("Empty List")
     case List(x)  => x
     case x :: _xs => x + sum(_xs)
   }
@@ -26,7 +26,7 @@ object Lists {
     def subroutine (ys: List[Int], m:Int): Int = ys match {
       case List()   => throw new java.util.NoSuchElementException()
       case List(y)  => if (y > m) y else m
-      case y :: _ys => if (y > m) subroutine(_ys.tail, y) else subroutine(_ys.tail, m)
+      case y :: _ys => subroutine(_ys, { if (y > m) y else m })
     }
 
     subroutine(xs, Int.MinValue)
