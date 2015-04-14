@@ -8,8 +8,7 @@ object Lists {
    * @return The sum of all elements in `xs`
    */
   def sum(xs: List[Int]): Int = xs match {
-    case List()   => throw new Exception("Empty List")
-    case List(x)  => x
+    case List()   => 0
     case x :: _xs => x + sum(_xs)
   }
 
