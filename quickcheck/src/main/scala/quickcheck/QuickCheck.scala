@@ -54,7 +54,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   property("isEmptyBasic") = forAll { a: Int =>
     val h = insert(a, empty)
-    isEmpty(h)
+    isEmpty(h) == false
   }
 
   property("deleteMinTypecheck") = forAll { a: Int =>
