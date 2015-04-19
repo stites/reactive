@@ -7,7 +7,17 @@ import org.scalacheck._
 
 abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
-  property("min1") = forAll { a: Int =>
+  property("emptyTypecheck") = empty.isInstanceOf[H]
+
+  property("insertTypecheck") = forAll { a: Int =>
+    insert(a, empty).isInstanceOf[H]
+  }
+
+  property("insertOutput") = forAll { a: Int =>
+    insert(a, empty) != empty
+  }
+
+  property("minOneInput") = forAll { a: Int =>
     val h = insert(a, empty)
     findMin(h) == a
   }
