@@ -48,7 +48,9 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
-  property("isEmptyOutput") = isEmpty(empty)
+  property("isEmptyOutput") = {
+    isEmpty(empty) == true
+  }
 
   property("isEmptyBasic") = forAll { a: Int =>
     val h = insert(a, empty)
@@ -87,9 +89,7 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     val aMin = findMin(a)
     val bMin = findMin(b)
 
-    findMin(meld(a, b)) match {
-      case aMin => true
-      case bMin => true
-    }
+    val mMin = findMin(meld(a, b))
+    mMin == aMin || mMin == bMin
   }
 }
