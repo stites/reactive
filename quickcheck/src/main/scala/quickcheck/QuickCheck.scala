@@ -80,4 +80,16 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     val h = meld( insert(a, empty), insert(b, empty) )
     h == insert(a, insert(b, empty))
   }
+
+  property("hint4") = {
+    val a = genHeap.sample.get
+    val b = genHeap.sample.get
+    val aMin = findMin(a)
+    val bMin = findMin(b)
+
+    findMin(meld(a, b)) match {
+      case aMin => true
+      case bMin => true
+    }
+  }
 }
