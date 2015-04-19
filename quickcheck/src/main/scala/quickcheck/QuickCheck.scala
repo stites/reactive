@@ -22,6 +22,12 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(h) == a
   }
 
+  property("minTwoInputs") = forAll { (a: Int, b: Int) =>
+    val h = insert(b, insert(a, empty))
+    val smallest = if (a < b) a else b
+    findMin(h) == smallest
+  }
+
   lazy val genHeap: Gen[H] = for {
     n <- arbitrary[Int]
     h <- oneOf(const(empty), genHeap)
