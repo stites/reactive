@@ -48,4 +48,12 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
+  property("isEmptyOutput") = isEmpty(empty)
+
+  property("isEmptyBasic") = forAll { a: Int =>
+    val h = insert(a, empty)
+    isEmpty(h)
+  }
+
+
 }
