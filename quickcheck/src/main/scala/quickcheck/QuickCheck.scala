@@ -60,4 +60,15 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     deleteMin(h).isInstanceOf[H]
   }
 
+  property("deleteMinBasic") = forAll { a: Int =>
+    val h = insert(a, empty)
+    empty == deleteMin(h)
+  }
+
+  property("deleteMinTwoInputs") = forAll { (a: Int, b: Int) =>
+    val h = insert(b, insert(a, empty))
+    val largest = if (a > b) a else b
+    deleteMin(h) == insert(largest, empty)
+  }
+
 }
