@@ -71,4 +71,13 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     deleteMin(h) == insert(largest, empty)
   }
 
+  property("meldTypecheck") = forAll { (a: Int, b: Int) =>
+    val h = meld( insert(a, empty), insert(b, empty) )
+    h.isInstanceOf[H]
+  }
+
+  property("meldTwoInputs") = forAll { (a: Int, b: Int) =>
+    val h = meld( insert(a, empty), insert(b, empty) )
+    h == insert(a, insert(b, empty))
+  }
 }
