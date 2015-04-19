@@ -73,6 +73,19 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     deleteMin(h) == insert(largest, empty)
   }
 
+  property("deleteMinVarInputs") = {
+    val is = Gen.listOf(Gen.choose(-100, 100)).sample
+    val list = is.get
+    val smallest = is.get.min
+    var heap = empty
+
+    for {
+      i <- list
+    } heap = insert(i, heap)
+
+    findMin(deleteMin(heap)) != smallest
+  }
+
   property("meldTypecheck") = forAll { (a: Int, b: Int) =>
     val h = meld( insert(a, empty), insert(b, empty) )
     h.isInstanceOf[H]
