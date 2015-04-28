@@ -51,4 +51,22 @@ class CalculatorSuite extends FunSuite with ShouldMatchers {
     assert(resultRed2() == "red")
   }
 
+  test("colorForRemainingCharsCount should follow the input signal") {
+    val input = Var(52)
+    val result = TweetLength.colorForRemainingCharsCount(input)
+    assert(result() == "green")
+    input() = 80
+    assert(result() == "green")
+
+    input() = 12
+    assert(result() == "orange")
+    input() = 0
+    assert(result() == "orange")
+
+    input() = -1
+    assert(result() == "red")
+    input() = -5
+    assert(result() == "red")
+  }
+
 }
