@@ -13,17 +13,18 @@ object Calculator {
   def computeValues(namedExpressions: Map[String, Signal[Expr]])
   : Map[String, Signal[Double]] = {
     namedExpressions.map {
-      case (key, sig) => (key, Signal(eval(sig(), namedExpressions) ))
+      case (key, sig) => (key, Signal(eval(getReferenceExpr(key, namedExpressions), namedExpressions - key) ))
     }
   }
 
   def eval(expr: Expr, references: Map[String, Signal[Expr]]): Double = expr match {
     case Literal(v) => v
-    case Ref(name) => eval(getReferenceExpr(name, references), references)
+    case Ref(name) => eval(getReferenceExpr(name, references), references - name)
     case Plus(a, b) => eval(a, references) + eval(b, references)
     case Minus(a, b) => eval(a, references) - eval(b, references)
     case Times(a, b) => eval(a, references) * eval(b, references)
     case Divide(a, b) => eval(a, references) / eval(b, references)
+    case _ => Double.NaN
   }
 
   /** Get the Expr for a referenced variables.
