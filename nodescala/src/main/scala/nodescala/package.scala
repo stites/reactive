@@ -37,7 +37,14 @@ package object nodescala {
      *  If any of the futures `fs` fails, the resulting future also fails.
      */
     def all[T](fs: List[Future[T]]): Future[List[T]] = {
-      ???
+      val p = Promise[List[T]]()
+      p success List()
+      fs.foldRight (p.future) {
+        (f, acc) => for {
+          x <- f
+          xs <- acc
+        } yield x :: xs
+      }
     }
 
     /** Given a list of futures `fs`, returns the future holding the value of
@@ -90,7 +97,14 @@ package object nodescala {
      *  However, it is also non-deterministic -- it may throw or return a value
      *  depending on the current state of the `Future`.
      */
-    def now: T = ???
+    def now: T = {
+      if (!f.isCompleted) throw new NoSuchElementException()
+
+      Try(Await.result(f, Duration.Zero)) match {
+        case Success(m) => m
+        case Failure(n) => throw new NoSuchElementException()
+      }
+    }
 
     /** Continues the computation of this future by taking the current future
      *  and mapping it into another future.
