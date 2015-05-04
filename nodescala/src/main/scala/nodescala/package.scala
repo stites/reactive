@@ -1,11 +1,9 @@
-import scala.language.postfixOps
-import scala.io.StdIn
-import scala.util._
-import scala.util.control.NonFatal
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
 import scala.concurrent.duration._
-import ExecutionContext.Implicits.global
-import scala.async.Async.{async, await}
+import scala.io.StdIn
+import scala.language.postfixOps
+import scala.util._
 
 /** Contains basic data types, data structures and `Future` extensions.
  */
@@ -112,7 +110,17 @@ package object nodescala {
      *  The function `cont` is called only after the current future completes.
      *  The resulting future contains a value returned by `cont`.
      */
-    def continueWith[S](cont: Future[T] => S): Future[S] = ???
+    def continueWith[S](cont: Future[T] => S): Future[S] = {
+      val p = Promise[T]()
+      f onComplete {
+        case tryValue => cont onComplete {
+          case Success(_) => p.success(_)
+          case Failure(_) => p.failure(_)
+        }
+      }
+      p.future
+      ???
+    }
 
     /** Continues the computation of this future by taking the result
      *  of the current future and mapping it into another future.
@@ -120,7 +128,11 @@ package object nodescala {
      *  The function `cont` is called only after the current future completes.
      *  The resulting future contains a value returned by `cont`.
      */
-    def continue[S](cont: Try[T] => S): Future[S] = ???
+    def continue[S](cont: Try[T] => S): Future[S] = {
+      val p = Promise[S]()
+      f onComplete ( tryValue => p.tryComplete(Try(cont(tryValue))) )
+      p.future
+    }
 
   }
 
@@ -155,7 +167,7 @@ package object nodescala {
    *  returns a `cancellationToken` which is cancelled by calling `unsubscribe`.
    *
    *  After calling `unsubscribe` once, the associated `cancellationToken` will
-   *  forever remain cancelled -- its `isCancelled` will return `false.
+   *  forever remain cancelled -- its `isCancelled` will return `false`.
    */
   trait CancellationTokenSource extends Subscription {
     def cancellationToken: CancellationToken
