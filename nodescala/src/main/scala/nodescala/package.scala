@@ -111,15 +111,11 @@ package object nodescala {
      *  The resulting future contains a value returned by `cont`.
      */
     def continueWith[S](cont: Future[T] => S): Future[S] = {
-      val p = Promise[T]()
+      val p = Promise[S]()
       f onComplete {
-        case tryValue => cont onComplete {
-          case Success(_) => p.success(_)
-          case Failure(_) => p.failure(_)
-        }
+        tryValue => p.tryComplete(Try(cont(f)))
       }
       p.future
-      ???
     }
 
     /** Continues the computation of this future by taking the result
