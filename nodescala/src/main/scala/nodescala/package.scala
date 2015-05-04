@@ -17,7 +17,12 @@ package object nodescala {
 
     /** Returns a future that is always completed with `value`.
      */
-    def always[T](value: T): Future[T] = ???
+    def always[T](value: T): Future[T] = {
+      val p = Promise[T]()
+      p.success(value)
+      p.future
+    }
+
     /** Returns a future that is never completed.
      *
      *  This future may be useful when testing if timeout logic works correctly.
