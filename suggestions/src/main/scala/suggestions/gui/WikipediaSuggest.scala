@@ -5,6 +5,7 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.swing.Reactions.Reaction
 import scala.swing._
 import scala.util.{ Try, Success, Failure }
 import scala.swing.event._
@@ -81,25 +82,34 @@ object WikipediaSuggest extends SimpleSwingApplication with ConcreteSwingApi wit
      */
 
     // TO IMPLEMENT
-    val searchTerms: Observable[String] = ???
+    val searchTerms: Observable[String] =  searchTermField.textValues
 
     // TO IMPLEMENT
-    val suggestions: Observable[Try[List[String]]] = ???
+    val suggestions: Observable[Try[List[String]]] =  searchTerms.flatMap(wikiSuggestResponseStream(_).recovered)
 
     // TO IMPLEMENT
     val suggestionSubscription: Subscription =  suggestions.observeOn(eventScheduler) subscribe {
-      x => ???
+      x => x.map(suggestionList.listData=_)
+        .recover({case e => status.text = e.getMessage})
     }
 
     // TO IMPLEMENT
-    val selections: Observable[String] = ???
+    val selections: Observable[String] = {
+      button.clicks.flatMap {
+        button => Observable.from(suggestionList.selection.items)
+      }
+    }
 
     // TO IMPLEMENT
-    val pages: Observable[Try[String]] = ???
+    val pages: Observable[Try[String]] = selections
+      .flatMap(wikiPageResponseStream)
+      .map(r => Success(r))
+      .onErrorReturn { t => Failure(t) }
+
 
     // TO IMPLEMENT
     val pageSubscription: Subscription = pages.observeOn(eventScheduler) subscribe {
-      x => ???
+      x => x.map( editorpane.text = _ )
     }
 
   }
