@@ -80,7 +80,15 @@ class BinaryTreeSet extends Actor {
     * `newRoot` is the root of the new binary tree where we want to copy
     * all non-removed elements into.
     */
-  def garbageCollecting(newRoot: ActorRef): Receive = ???
+  def garbageCollecting(newRoot: ActorRef): Receive = {
+    case message:Operation => pendingQueue = pendingQueue :+ message
+    case CopyFinished => {
+      while (!pendingQueue.isEmpty) {
+        newRoot ! pendingQueue.dequeue
+      }
+      context.become(normal)
+    }
+  }
 
 }
 
