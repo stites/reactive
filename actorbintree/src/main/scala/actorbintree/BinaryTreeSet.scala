@@ -66,7 +66,14 @@ class BinaryTreeSet extends Actor {
 
   // optional
   /** Accepts `Operation` and `GC` messages. */
-  val normal: Receive = { case _ => ??? }
+  val normal: Receive = {
+    case message:Operation => root ! message
+    case GC => {
+      val newRoot = createRoot
+      context.become(garbageCollecting(newRoot))
+      root ! CopyTo(newRoot)
+    }
+  }
 
   // optional
   /** Handles messages while garbage collection is performed.
