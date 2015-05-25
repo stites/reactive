@@ -43,7 +43,7 @@ object BinaryTreeSet {
     * `result` is true if and only if the element is present in the tree.
     */
   case class ContainsResult(id: Int, result: Boolean) extends OperationReply
-  
+
   /** Message to signal successful completion of an insert or remove operation. */
   case class OperationFinished(id: Int) extends OperationReply
 
@@ -195,7 +195,26 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
   /** `expected` is the set of ActorRefs whose replies we are waiting for,
     * `insertConfirmed` tracks whether the copy of this node to the new tree has been confirmed.
     */
-  def copying(expected: Set[ActorRef], insertConfirmed: Boolean): Receive = ???
+  def copying(expected: Set[ActorRef], insertConfirmed: Boolean): Receive = {
+    case OperationFinished(id) => expected.isEmpty match {
+      case true => finishCopying
+      case false => context.become(copying(expected, true))
+    }
+    case CopyFinished => {
+      val remaining = expected - sender
+      (remaining.isEmpty, insertConfirmed) match {
+        case (true, true) => finishCopying
+        case _ => context.become(copying(remaining, insertConfirmed))
+      }
+    }
+  }
+
+  def traverseDirection(reqElement: Int) = if (reqElement > elem) Right else Left
+
+  def finishCopying = {
+    context.parent ! CopyFinished
+    context.become(normal)
+  }
 
 
 }
