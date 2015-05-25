@@ -123,7 +123,73 @@ class BinaryTreeNode(val elem: Int, initiallyRemoved: Boolean) extends Actor {
 
   // optional
   /** Handles `Operation` messages and `CopyTo` requests. */
-  val normal: Receive = { case _ => ??? }
+  val normal: Receive = {
+
+    case msg @ Insert(requester, id, newElem) => {
+      newElem match {
+        case `elem` => {
+          removed = false
+          requester ! OperationFinished(id)
+        }
+        case _ => {
+          val direction = traverseDirection(newElem)
+
+          subtrees.get(direction) match {
+            case Some(act) => act ! msg
+            case None => {
+              subtrees += (direction -> context.actorOf(props(newElem, false), id.toString))
+              requester ! OperationFinished(id)
+            }
+          }
+
+        }
+      }
+    }
+
+    case msg @ Contains(requester, id, reqElem) => {
+      reqElem match {
+        case `elem` => {
+          removed match {
+            case false => requester ! ContainsResult(id, true)
+            case true => requester ! ContainsResult(id, false)
+          }
+        }
+        case _ => {
+          subtrees.get(traverseDirection(reqElem)) match {
+            case Some(act) => act ! msg
+            case None => requester ! ContainsResult(id, false)
+          }
+        }
+      }
+    }
+
+    case msg @ Remove(requester, id, reqElement) => {
+      reqElement match {
+        case `elem` => {
+          removed = true
+          requester ! OperationFinished(id)
+        }
+        case _ => {
+          subtrees.get(traverseDirection(reqElement)) match {
+            case Some(act) => act ! msg
+            case None => requester ! OperationFinished(id)
+          }
+
+        }
+      }
+    }
+
+    case CopyTo(target) => {
+      subtrees.values.foreach { act => act ! CopyTo(target) }
+      context.become(copying(subtrees.values.toSet, removed))
+
+      removed match {
+        case true => self ! OperationFinished(elem)
+        case false => target ! Insert(self, elem, elem)
+      }
+    }
+
+  }
 
   // optional
   /** `expected` is the set of ActorRefs whose replies we are waiting for,
