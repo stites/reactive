@@ -81,11 +81,18 @@ class BinaryTreeSet extends Actor {
     * all non-removed elements into.
     */
   def garbageCollecting(newRoot: ActorRef): Receive = {
-    case message:Operation => pendingQueue = pendingQueue :+ message
+    case message:Operation => pendingQueue = pendingQueue.enqueue(message)
     case CopyFinished => {
       while (!pendingQueue.isEmpty) {
-        newRoot ! pendingQueue.dequeue
+        pendingQueue.dequeue match {
+          case (operation, queue) => {
+            newRoot ! operation
+            pendingQueue = queue
+          }
+        }
       }
+      root ! PoisonPill
+      root = newRoot
       context.become(normal)
     }
   }
